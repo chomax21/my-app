@@ -27,10 +27,6 @@ async function submitForm() {
       form
     )
 
-
-    // Очищаем форму
-    form.title = ''
-    form.body = ''
   } catch (err) {
     error.value = err.response?.data?.message || err.message
   } finally {

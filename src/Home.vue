@@ -31,7 +31,7 @@ onMounted(() => {
     }
 })
 
-signIn(async() => {
+async function signIn() {
     loading.value = true
     error.value = null
     message.value = null
@@ -51,8 +51,18 @@ signIn(async() => {
             data.value = response
             console.log(JSON.parse(JSON.stringify(data.value.data)))
             userData.value = JSON.parse(JSON.stringify(data.value.data))
+            
+            const userinfo = JSON.stringify({
+                    login: userData.value.login,
+                    name: userData.value.name,
+                    sname: userData.value.sname,
+                    lname: userData.value.lname,
+                    password: userData.value.password
+                })
 
-            Cookies.set('userData', `${userData.value.login} ${userData.value.password}`, {
+            Cookies.set('userData', 
+                userinfo
+               ,{
                 expires: 1,
                 secure: false,
                 sameSite: 'strict'
@@ -67,7 +77,7 @@ signIn(async() => {
     } finally {
         loading.value = false
     }
-})
+}
 </script>
 
 <template>
