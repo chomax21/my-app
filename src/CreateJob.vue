@@ -21,7 +21,7 @@ onMounted(async () => {
       const users = response.data
       const selectUsers = []
       for (let user of Object.entries(users.usersDict)) {
-        selectUsers.push({label: user[1], value: user[0]})
+        selectUsers.push({ label: user[1], value: user[0] })
       }
       userList.value = selectUsers
     }
@@ -29,6 +29,32 @@ onMounted(async () => {
     error.value = err.response?.data?.message || err.message
   }
 })
+
+async function submitForm() {
+  error.value = null
+  message.value = null
+
+  try {
+    const response = await api.post(
+      'api/job',
+      {
+        "status": form.Status,
+        "createdBy": form.CreatedBy,
+        "assignedTo": form.AssignedTo,
+        "title": form.Title,
+        "description": form.Description
+      }
+    )
+    if(response.data.status == 200){
+
+    }
+
+  } catch (err) {
+    error.value = err.response?.data?.message || err.message
+  } finally {
+    loading.value = false
+  }
+}
 
 const form = reactive({
   Title: '',
@@ -40,26 +66,27 @@ const form = reactive({
   UpdatedAt: ''
 })
 
+const currentuser = ref("")
 const loading = ref(false)
 const error = ref(null)
 const message = ref(null)
-const userList = ref(null)
-
-async function submitForm() {
-  error.value = null
-  message.value = null
-
-  try {
-    const response = await api.post(
-      'api/users', {}
-    )
-
-  } catch (err) {
-    error.value = err.response?.data?.message || err.message
-  } finally {
-    loading.value = false
-  }
-}
+const userList = ref([])
+const classes = ref({
+  container: 'w-full max-w-md',
+  control: 'border-0 border-gray-200 hover:border-gray-300',
+  valueContainer: 'p-1',
+  placeholder: 'text-gray-400',
+  singleValue: 'text-gray-800 font-medium',
+  multiValue: 'bg-blue-100 rounded-md',
+  multiValueLabel: 'text-blue-800 px-2 py-1',
+  multiValueRemove: 'hover:bg-blue-200 px-2',
+  inputContainer: 'p-',
+  searchInput: 'text-gray-700',
+  menuContainer: 'mt-1 border border-gray-200 rounded-md shadow-lg',
+  menuOption: 'px-3 py-2 hover:bg-gray-100',
+  noResults: 'text-gray-500 p-3',
+  taggableNoOptions: 'text-blue-600 p- hover:bg-blue-50',
+})
 </script>
 
 <template>
@@ -84,11 +111,11 @@ async function submitForm() {
             <span class="font-monospace">Статус задачи</span>
           </div>
           <div class="d-flex">
-            <VueSelect class="form-control shadow p-3 bg-body rounded" v-model="form.Status" :options="[
+            <VueSelect class="form-control shadow bg-body rounded" v-model="form.Status" :options="[
               { label: 'ToDo', value: '1' },
               { label: 'InProgress', value: '2' },
               { label: 'Do', value: '3' },
-            ]" placeholder="Статус задачи" required />
+            ]" placeholder="Статус задачи" required :classes="classes" />
           </div>
           <div class="d-flex mt-2 justify-content-end">
             <span class="font-monospace">Создатель</span>
@@ -100,13 +127,14 @@ async function submitForm() {
             <span class="font-monospace">Назначена</span>
           </div>
           <div class="d-flex">
-            <VueSelect class="form-control shadow p-3 bg-body rounded" v-model="form.AssignedTo" :options="userList" placeholder="Выбрать пользователя" required />
+            <VueSelect class="form-control shadow  bg-body rounded custom-select" v-model="form.AssignedTo"
+              :options="userList" placeholder="Выбрать пользователя" required :classes="classes" />
           </div>
           <div class="d-flex mt-3 justify-content-center">
             <button type="submit" class="btn btn-success  shadow">Создать</button>
           </div>
           <div class="d-flex mt-3 justify-content-center">
-            <router-link to="/">Назад</router-link>
+            <router-link to="/jobs">Назад</router-link>
           </div>
         </div>
       </form>
