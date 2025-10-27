@@ -1,25 +1,35 @@
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onUpdated } from 'vue'
 import api from '@/services/api'
 import VueSelect from "vue3-select-component";
 import Cookies from 'js-cookie'
 
+
 onMounted(async () => {
   try {
-    const userDataString = JSON.parse(Cookies.get('userData'))
-    if (userDataString === undefined || userDataString === null) {
+    const userData = JSON.parse(Cookies.get('userData'))
+    if (userData === undefined || userData === null) {
       router.push('/')
     } else {
-      form.CreatedAt = userDataString.login
+      form.CreatedBy = userData.login
       const response = await api.get(
         'api/users', {
         params: {
-          login: userDataString.login
+          login: userData.login
         }
-      }
-      )
+      })
+
       const users = response.data
       const selectUsers = []
+
+      Cookies.set('usersDataList',
+        users.usersDict
+        , {
+          expires: 1,
+          secure: false,
+          sameSite: 'strict'
+        })
+      
       for (let user of Object.entries(users.usersDict)) {
         selectUsers.push({ label: user[1], value: user[0] })
       }
@@ -27,6 +37,20 @@ onMounted(async () => {
     }
   } catch (err) {
     error.value = err.response?.data?.message || err.message
+  }
+})
+
+onUpdated(() => {
+  const usersDataList = JSON.parse(JSON.stringify(Cookies.get('usersDataList')))
+  if (usersDataList === undefined || usersDataList === null) {
+    const selectUsers = []
+    for (let user of Object.entries(usersDataList)) {
+      selectUsers.push({ label: user[1], value: user[0] })
+    }
+    userList.value = selectUsers
+  }
+  else {
+    router.push('/')
   }
 })
 
@@ -38,14 +62,17 @@ async function submitForm() {
     const response = await api.post(
       'api/job',
       {
+        "id": null,
         "status": form.Status,
         "createdBy": form.CreatedBy,
         "assignedTo": form.AssignedTo,
         "title": form.Title,
-        "description": form.Description
+        "description": form.Description,
+        "createdAt": null,
+        "updatedAt": null
       }
     )
-    if(response.data.status == 200){
+    if (response.data.status == 200) {
 
     }
 
@@ -104,7 +131,7 @@ const classes = ref({
             <span class="font-monospace">Описание</span>
           </div>
           <div class="d-flex">
-            <textarea class="form-control shadow p-3 bg-body rounded" v-model="form.Name" style="height: 300px"
+            <textarea class="form-control shadow p-3 bg-body rounded" v-model="form.Description" style="height: 300px"
               type="text" required></textarea>
           </div>
           <div class="d-flex mt-2 justify-content-end">
@@ -121,7 +148,7 @@ const classes = ref({
             <span class="font-monospace">Создатель</span>
           </div>
           <div class="d-flex">
-            <input class="form-control shadow p-3 bg-body rounded" v-model="form.CreatedAt" type="text" readonly />
+            <input class="form-control shadow p-3 bg-body rounded" v-model="form.CreatedBy" type="text" readonly />
           </div>
           <div class="d-flex mt-2 justify-content-end">
             <span class="font-monospace">Назначена</span>
