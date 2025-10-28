@@ -2,7 +2,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import api from '@/services/api'
 import Cookies from 'js-cookie'
-import { useRoute, useRouter } from 'vue-router'
+import {  useRouter } from 'vue-router'
 
 
 const form = reactive({
@@ -81,7 +81,7 @@ async function signIn() {
 </script>
 
 <template>
-    <div class="container-fluid bg-color-dark">
+    <div class="container-fluid">
         <form @submit.prevent="signIn">
             <div class="d-flex position-absolute top-50 start-50 translate-middle">
                 <div class="col">
@@ -89,18 +89,18 @@ async function signIn() {
                         <span class="font-monospace">Логин</span>
                     </div>
                     <div class="d-flex">
-                        <input class="form-control shadow p-3 bg-body rounded" v-model="form.login" type="text"
+                        <input class="form-control shadow p-3 bg-body rounded font-monospace" v-model="form.login" type="text"
                             required />
                     </div>
                     <div class="d-flex mt-2 justify-content-end">
                         <span class="font-monospace">Пароль</span>
                     </div>
                     <div class="d-flex">
-                        <input class="form-control shadow p-3 bg-body rounded" v-model="form.password" type="password"
+                        <input class="form-control shadow p-3 bg-body rounded font-monospace" v-model="form.password" type="password"
                             required />
                     </div>
                     <div class="d-flex m-2 justify-content-center">
-                        <button type="submit" class="btn btn-success m-2 shadow">Войти</button>
+                        <button type="submit" class="btn btn-success m-2 shadow font-monospace">Войти</button>
                     </div>
                     <div class="d-flex m-2 justify-content-center">
                         <router-link to="/create-user" class="font-monospace">Новый пользователь</router-link>

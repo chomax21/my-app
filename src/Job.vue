@@ -3,14 +3,29 @@ import { ref, reactive, onMounted, onUpdated } from 'vue'
 import api from '@/services/api'
 import VueSelect from "vue3-select-component";
 import Cookies from 'js-cookie'
+import { useRoute, useRouter } from 'vue-router'
 
+const props = defineProps({
+  id: {
+    type: Number,
+    required: false
+  },
+  type: {
+    type: Number
+  }
+})
 
 onMounted(async () => {
   try {
-    const userData = JSON.parse(Cookies.get('userData'))
-    if (userData === undefined || userData === null) {
+
+    console.log(props.id)
+    
+    let cookieData = Cookies.get('userData')
+    
+    if (cookieData === undefined) {
       router.push('/')
     } else {
+      const userData = JSON.parse(cookieData)
       form.CreatedBy = userData.login
       const response = await api.get(
         'api/users', {
@@ -93,6 +108,8 @@ const form = reactive({
   UpdatedAt: ''
 })
 
+const route = useRoute()
+const router = useRouter()
 const currentuser = ref("")
 const loading = ref(false)
 const error = ref(null)
@@ -138,7 +155,7 @@ const classes = ref({
             <span class="font-monospace">Статус задачи</span>
           </div>
           <div class="d-flex">
-            <VueSelect class="form-control shadow bg-body rounded" v-model="form.Status" :options="[
+            <VueSelect class="form-control shadow bg-body rounded font-monospace" v-model="form.Status" :options="[
               { label: 'ToDo', value: '1' },
               { label: 'InProgress', value: '2' },
               { label: 'Do', value: '3' },
@@ -148,19 +165,19 @@ const classes = ref({
             <span class="font-monospace">Создатель</span>
           </div>
           <div class="d-flex">
-            <input class="form-control shadow p-3 bg-body rounded" v-model="form.CreatedBy" type="text" readonly />
+            <input class="form-control shadow p-3 bg-body rounded font-monospace" v-model="form.CreatedBy" type="text" readonly />
           </div>
           <div class="d-flex mt-2 justify-content-end">
             <span class="font-monospace">Назначена</span>
           </div>
           <div class="d-flex">
-            <VueSelect class="form-control shadow  bg-body rounded custom-select" v-model="form.AssignedTo"
+            <VueSelect class="form-control shadow  bg-body rounded custom-select font-monospace" v-model="form.AssignedTo"
               :options="userList" placeholder="Выбрать пользователя" required :classes="classes" />
           </div>
-          <div class="d-flex mt-3 justify-content-center">
+          <div class="d-flex mt-3 justify-content-center font-monospace">
             <button type="submit" class="btn btn-success  shadow">Создать</button>
           </div>
-          <div class="d-flex mt-3 justify-content-center">
+          <div class="d-flex mt-3 justify-content-center font-monospace">
             <router-link to="/jobs">Назад</router-link>
           </div>
         </div>
