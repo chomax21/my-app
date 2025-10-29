@@ -17,24 +17,19 @@ const props = defineProps({
 
 onMounted(async () => {
   try {
-
-    console.log(props.id)
-    
     let cookieData = Cookies.get('userData')
-    
+    const userData = JSON.parse(cookieData)
     if (cookieData === undefined) {
       router.push('/')
     } else {
-      const userData = JSON.parse(cookieData)
-      form.CreatedBy = userData.login
-      const response = await api.get(
+      const usersResponse = await api.get(
         'api/users', {
         params: {
           login: userData.login
         }
       })
 
-      const users = response.data
+      const users = usersResponse.data
       const selectUsers = []
 
       Cookies.set('usersDataList',
@@ -44,11 +39,32 @@ onMounted(async () => {
           secure: false,
           sameSite: 'strict'
         })
-      
+
       for (let user of Object.entries(users.usersDict)) {
         selectUsers.push({ label: user[1], value: user[0] })
       }
       userList.value = selectUsers
+
+      if (props) {
+        const jobResponse = await api.get(
+          'api/job', {
+          params: {
+            id: props.id
+          }
+        })
+        if (jobResponse && jobResponse.status === 200) {
+          form.Id = jobResponse.data.id,
+          form.Title = jobResponse.data.title,
+            form.Description = jobResponse.data.description,
+            form.Status = statusList.value.find(item => item.label === jobResponse.data.status.statusName).value,
+            form.CreatedBy = jobResponse.data.createdBy.login,
+            form.AssignedTo = jobResponse.data.assignedTo.login,
+            form.CreatedAt = jobResponse.data.createdAt,
+            form.UpdatedAt = jobResponse.data.updatedAt
+        }
+      } else {        
+        form.CreatedBy = userData.login
+      }
     }
   } catch (err) {
     error.value = err.response?.data?.message || err.message
@@ -56,39 +72,62 @@ onMounted(async () => {
 })
 
 onUpdated(() => {
-  const usersDataList = JSON.parse(JSON.stringify(Cookies.get('usersDataList')))
-  if (usersDataList === undefined || usersDataList === null) {
-    const selectUsers = []
-    for (let user of Object.entries(usersDataList)) {
-      selectUsers.push({ label: user[1], value: user[0] })
+  if (!props) {
+    const usersDataList = JSON.parse(JSON.stringify(Cookies.get('usersDataList')))
+    if (usersDataList === undefined || usersDataList === null) {
+      const selectUsers = []
+      for (let user of Object.entries(usersDataList)) {
+        selectUsers.push({ label: user[1], value: user[0] })
+      }
+      userList.value = selectUsers
     }
-    userList.value = selectUsers
-  }
-  else {
-    router.push('/')
+    else {
+      router.push('/')
+    }
   }
 })
 
 async function submitForm() {
+
   error.value = null
   message.value = null
 
   try {
-    const response = await api.post(
-      'api/job',
-      {
-        "id": null,
-        "status": form.Status,
-        "createdBy": form.CreatedBy,
-        "assignedTo": form.AssignedTo,
-        "title": form.Title,
-        "description": form.Description,
-        "createdAt": null,
-        "updatedAt": null
-      }
-    )
-    if (response.data.status == 200) {
+    let response = undefined
+    if (props) {
+      response = await api.put(
+        'api/job',
+        {
+          "id": form.Id,
+          "status": form.Status,
+          "createdBy": form.CreatedBy,
+          "assignedTo": form.AssignedTo,
+          "title": form.Title,
+          "description": form.Description,
+          "createdAt": form.createdAt,
+          "updatedAt": null
+        }
+      )
+    } else {
+      response = await api.post(
+        'api/job',
+        {
+          "id": null,
+          "status": form.Status,
+          "createdBy": form.CreatedBy,
+          "assignedTo": form.AssignedTo,
+          "title": form.Title,
+          "description": form.Description,
+          "createdAt": null,
+          "updatedAt": null
+        }
+      )
+    }
 
+    if (response.status == 200) {
+      router.push('/jobs')
+    } else {
+      router.push('/error')
     }
 
   } catch (err) {
@@ -99,6 +138,7 @@ async function submitForm() {
 }
 
 const form = reactive({
+  Id: '',
   Title: '',
   Description: '',
   Status: '',
@@ -115,6 +155,11 @@ const loading = ref(false)
 const error = ref(null)
 const message = ref(null)
 const userList = ref([])
+const statusList = ref([
+  { label: 'ToDo', value: '1' },
+  { label: 'InProgress', value: '2' },
+  { label: 'Do', value: '3' },
+])
 const classes = ref({
   container: 'w-full max-w-md',
   control: 'border-0 border-gray-200 hover:border-gray-300',
@@ -155,27 +200,29 @@ const classes = ref({
             <span class="font-monospace">Статус задачи</span>
           </div>
           <div class="d-flex">
-            <VueSelect class="form-control shadow bg-body rounded font-monospace" v-model="form.Status" :options="[
-              { label: 'ToDo', value: '1' },
-              { label: 'InProgress', value: '2' },
-              { label: 'Do', value: '3' },
-            ]" placeholder="Статус задачи" required :classes="classes" />
+            <VueSelect class="form-control shadow bg-body rounded font-monospace" :reduce="status => status.value"
+              v-model="form.Status" :options="statusList" placeholder="Статус задачи" required :classes="classes" />
           </div>
           <div class="d-flex mt-2 justify-content-end">
             <span class="font-monospace">Создатель</span>
           </div>
           <div class="d-flex">
-            <input class="form-control shadow p-3 bg-body rounded font-monospace" v-model="form.CreatedBy" type="text" readonly />
+            <input class="form-control shadow p-3 bg-body rounded font-monospace" v-model="form.CreatedBy" type="text"
+              readonly />
           </div>
           <div class="d-flex mt-2 justify-content-end">
             <span class="font-monospace">Назначена</span>
           </div>
           <div class="d-flex">
-            <VueSelect class="form-control shadow  bg-body rounded custom-select font-monospace" v-model="form.AssignedTo"
-              :options="userList" placeholder="Выбрать пользователя" required :classes="classes" />
+            <VueSelect class="form-control shadow  bg-body rounded custom-select font-monospace"
+              v-model="form.AssignedTo" :options="userList" placeholder="Выбрать пользователя" required
+              :classes="classes" />
           </div>
-          <div class="d-flex mt-3 justify-content-center font-monospace">
-            <button type="submit" class="btn btn-success  shadow">Создать</button>
+          <div v-if="!props" class="d-flex mt-3 justify-content-center font-monospace">
+            <button type="submit" class="btn btn-success shadow">Создать</button>
+          </div>
+          <div v-if="props" class="d-flex mt-3 justify-content-center font-monospace">
+            <button type="submit" class="btn btn-success shadow">Редактировать</button>
           </div>
           <div class="d-flex mt-3 justify-content-center font-monospace">
             <router-link to="/jobs">Назад</router-link>

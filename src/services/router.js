@@ -12,7 +12,7 @@ const routes = [
   { path: '/about', name: 'about', component: About },
   { path: '/jobs', name: 'jobs', component: Jobs },
   { path: '/create-user', name: 'create-user', component: User },
-  { path: '/job/:id', name: 'job', component: Job, props: true},
+  { path: '/job/:id?', name: 'job', component: Job, props: true},
   { path: '/error', name: 'error', component: Error },
 ]
 

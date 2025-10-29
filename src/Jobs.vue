@@ -24,13 +24,11 @@ onMounted(async () => {
                 'api/jobs', {}
             )
             if (response.status == 200) {
-                jobs.value = JSON.parse(JSON.stringify(response.data))
-                console.log(jobs.value)
+                jobs.value = JSON.parse(JSON.stringify(response.data.jobList))
             }
         }
     } catch (err) {
         error.value = err.response?.data?.message || err.message
-        console.log(err);
     }
 })
 
