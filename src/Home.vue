@@ -2,7 +2,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import api from '@/services/api'
 import Cookies from 'js-cookie'
-import {  useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 
 const form = reactive({
@@ -17,7 +17,6 @@ const message = ref(null)
 const data = ref(null);
 const userData = ref(null);
 
-
 onMounted(() => {
     try {
         const userDataString = Cookies.get('userData')
@@ -28,13 +27,17 @@ onMounted(() => {
     } catch (err) {
         error.value = err.response?.data?.message || err.message
         console.log(err);
+        router.push({
+            path: '/error',
+            query: { message: 'Что-то пошло не так...', status: response.status }
+        })
     }
 })
 
 async function signIn() {
     loading.value = true
     error.value = null
-    message.value = null
+    message.value = 'Сервер не доступен!'
 
     try {
         data.value = ''
@@ -51,29 +54,38 @@ async function signIn() {
             data.value = response
             console.log(JSON.parse(JSON.stringify(data.value.data)))
             userData.value = JSON.parse(JSON.stringify(data.value.data))
-            
-            const userinfo = JSON.stringify({
-                    login: userData.value.login,
-                    name: userData.value.name,
-                    sname: userData.value.sname,
-                    lname: userData.value.lname,
-                    password: userData.value.password
-                })
 
-            Cookies.set('userData', 
-                userinfo
-               ,{
-                expires: 1,
-                secure: false,
-                sameSite: 'strict'
+            const userinfo = JSON.stringify({
+                login: userData.value.login,
+                name: userData.value.name,
+                sname: userData.value.sname,
+                lname: userData.value.lname,
+                password: userData.value.password
             })
+
+            Cookies.set('userData',
+                userinfo
+                , {
+                    expires: 1,
+                    secure: false,
+                    sameSite: 'strict'
+                })
             router.push('/jobs')
+        } else {
+            router.push({
+                path: '/error',
+                query: { message: message.value , status: err.code }
+            })
         }
 
 
     } catch (err) {
         error.value = err.response?.data?.message || err.message
         console.log(err);
+        router.push({
+            path: '/error',
+            query: { message: message.value, status: err.code }
+        })
     } finally {
         loading.value = false
     }
@@ -89,15 +101,15 @@ async function signIn() {
                         <span class="font-monospace">Логин</span>
                     </div>
                     <div class="d-flex">
-                        <input class="form-control shadow p-3 bg-body rounded font-monospace" v-model="form.login" type="text"
-                            required />
+                        <input class="form-control shadow p-3 bg-body rounded font-monospace" v-model="form.login"
+                            type="text" required />
                     </div>
                     <div class="d-flex mt-2 justify-content-end">
                         <span class="font-monospace">Пароль</span>
                     </div>
                     <div class="d-flex">
-                        <input class="form-control shadow p-3 bg-body rounded font-monospace" v-model="form.password" type="password"
-                            required />
+                        <input class="form-control shadow p-3 bg-body rounded font-monospace" v-model="form.password"
+                            type="password" required />
                     </div>
                     <div class="d-flex m-2 justify-content-center">
                         <button type="submit" class="btn btn-success m-2 shadow font-monospace">Войти</button>

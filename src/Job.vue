@@ -3,7 +3,7 @@ import { ref, reactive, onMounted, onUpdated } from 'vue'
 import api from '@/services/api'
 import VueSelect from "vue3-select-component";
 import Cookies from 'js-cookie'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   id: {
@@ -34,10 +34,10 @@ onMounted(async () => {
 
       Cookies.set('usersDataList',
         JSON.stringify(users.usersDict), {
-          expires: 1,
-          secure: false,
-          sameSite: 'strict'
-        })
+        expires: 1,
+        secure: false,
+        sameSite: 'strict'
+      })
 
       for (let user of Object.entries(users.usersDict)) {
         selectUsers.push({ label: user[1], value: user[0] })
@@ -53,7 +53,7 @@ onMounted(async () => {
         })
         if (jobResponse && jobResponse.status === 200) {
           form.Id = jobResponse.data.id,
-          form.Title = jobResponse.data.title,
+            form.Title = jobResponse.data.title,
             form.Description = jobResponse.data.description,
             form.Status = statusList.value.find(item => item.label === jobResponse.data.status.statusName).value,
             form.CreatedBy = jobResponse.data.createdBy.login,
@@ -61,12 +61,15 @@ onMounted(async () => {
             form.CreatedAt = jobResponse.data.createdAt,
             form.UpdatedAt = jobResponse.data.updatedAt
         }
-      } else {        
+      } else {
         form.CreatedBy = userData.login
       }
     }
   } catch (err) {
-    error.value = err.response?.data?.message || err.message
+    router.push({
+      path: '/error',
+      query: { message: message.value, status: err.code }
+    })
   }
 })
 
@@ -118,7 +121,7 @@ async function submitForm() {
           "title": form.Title,
           "description": form.Description,
           "createdAt": new Date().toISOString().slice(0, -1),
-          "updatedAt": new Date().toISOString().slice(0, -1) 
+          "updatedAt": new Date().toISOString().slice(0, -1)
         }
       )
     }
@@ -126,11 +129,17 @@ async function submitForm() {
     if (response.status == 200) {
       router.push('/jobs')
     } else {
-      router.push('/error')
+      router.push({
+        path: '/error',
+        query: { message: message.value, status: response.status }
+      })
     }
 
   } catch (err) {
-    error.value = err.response?.data?.message || err.message
+    router.push({
+      path: '/error',
+      query: { message: message.value, status: err.code }
+    })
   } finally {
     loading.value = false
   }

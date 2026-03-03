@@ -6,11 +6,7 @@ import draggable from 'vuedraggable'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const testData = ref(null)
-const login = ref(false)
-const error = ref(null)
 const message = ref(null)
-const data = ref(null)
 const jobs = ref([])
 
 onMounted(async () => {
@@ -28,7 +24,10 @@ onMounted(async () => {
             }
         }
     } catch (err) {
-        error.value = err.response?.data?.message || err.message
+        router.push({
+            path: '/error',
+            query: { message: message.value, status: err.code }
+        })
     }
 })
 
@@ -53,9 +52,9 @@ function CreateJob() {
 </script>
 
 <template>
-    <div class="container-fluid">
+    <div class="container-fluid card">
         <div class="position-relative py-2 px-4 shadow border-3 rounded mt-5">
-            <div class="d-flex justify-content-center align-items-center">
+            <div class="card-body d-flex justify-content-center align-items-center">
                 <draggable v-model="jobs" item-key="id">
                     <template #item="{ element }">
                         <div class="border border-3 rounded m-1 p-2 font-monospace">
@@ -82,7 +81,8 @@ function CreateJob() {
                                 <strong>Назначена: </strong> {{ element.assignedTo.login }}
                             </p>
                             <div class="col offset-md-9 ">
-                                <button v-on:click="UpdateJob(element.id)" class="btn btn-secondary m-0 p-0">Редактировать</button>
+                                <button v-on:click="UpdateJob(element.id)"
+                                    class="btn btn-secondary m-0 p-0">Редактировать</button>
                             </div>
                         </div>
                     </template>
@@ -96,7 +96,8 @@ function CreateJob() {
                         <div class="d-flex mt-3 ">
                             <!-- <router-link class="btn btn-success shadow font-monospace" to="/job">Добавить новую
                                 задачу</router-link> -->
-                            <button v-on:click="CreateJob()" class="btn btn-success font-monospace">Добавить новую задачу</button>
+                            <button v-on:click="CreateJob()" class="btn btn-success font-monospace">Добавить новую
+                                задачу</button>
                         </div>
                         <div class="d-flex mt-3 ms-5 ps-4 font-monospace">
                             <a v-on:click="logout" href="/">Выйти</a>

@@ -28,7 +28,10 @@ async function submitForm() {
     )
 
   } catch (err) {
-    error.value = err.response?.data?.message || err.message
+    router.push({
+      path: '/error',
+      query: { message: message.value, status: err.code }
+    })
   } finally {
     loading.value = false
   }
