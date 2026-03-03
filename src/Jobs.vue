@@ -44,6 +44,12 @@ function UpdateJob(jobId) {
         params: { id: jobId }
     })
 }
+
+function CreateJob() {
+    router.push({
+        name: 'job'
+    })
+}
 </script>
 
 <template>
@@ -88,8 +94,9 @@ function UpdateJob(jobId) {
                 <div class="d-flex">
                     <div class="col align-self-center offset-md-5">
                         <div class="d-flex mt-3 ">
-                            <router-link class="btn btn-success shadow font-monospace" to="/job">Добавить новую
-                                задачу</router-link>
+                            <!-- <router-link class="btn btn-success shadow font-monospace" to="/job">Добавить новую
+                                задачу</router-link> -->
+                            <button v-on:click="CreateJob()" class="btn btn-success font-monospace">Добавить новую задачу</button>
                         </div>
                         <div class="d-flex mt-3 ms-5 ps-4 font-monospace">
                             <a v-on:click="logout" href="/">Выйти</a>

@@ -33,8 +33,7 @@ onMounted(async () => {
       const selectUsers = []
 
       Cookies.set('usersDataList',
-        users.usersDict
-        , {
+        JSON.stringify(users.usersDict), {
           expires: 1,
           secure: false,
           sameSite: 'strict'
@@ -45,7 +44,7 @@ onMounted(async () => {
       }
       userList.value = selectUsers
 
-      if (props) {
+      if (props.id) {
         const jobResponse = await api.get(
           'api/job', {
           params: {
@@ -72,9 +71,9 @@ onMounted(async () => {
 })
 
 onUpdated(() => {
-  if (!props) {
-    const usersDataList = JSON.parse(JSON.stringify(Cookies.get('usersDataList')))
-    if (usersDataList === undefined || usersDataList === null) {
+  if (!props.id) {
+    const usersDataList = JSON.parse(Cookies.get('usersDataList'))
+    if (usersDataList !== undefined) {
       const selectUsers = []
       for (let user of Object.entries(usersDataList)) {
         selectUsers.push({ label: user[1], value: user[0] })
@@ -94,7 +93,7 @@ async function submitForm() {
 
   try {
     let response = undefined
-    if (props) {
+    if (props.id) {
       response = await api.put(
         'api/job',
         {
@@ -104,22 +103,22 @@ async function submitForm() {
           "assignedTo": form.AssignedTo,
           "title": form.Title,
           "description": form.Description,
-          "createdAt": form.createdAt,
-          "updatedAt": null
+          "createdAt": form.CreatedAt,
+          "updatedAt": form.UpdatedAt
         }
       )
     } else {
       response = await api.post(
         'api/job',
         {
-          "id": null,
+          "id": '0',
           "status": form.Status,
           "createdBy": form.CreatedBy,
           "assignedTo": form.AssignedTo,
           "title": form.Title,
           "description": form.Description,
-          "createdAt": null,
-          "updatedAt": null
+          "createdAt": new Date().toISOString().slice(0, -1),
+          "updatedAt": new Date().toISOString().slice(0, -1) 
         }
       )
     }
@@ -148,9 +147,7 @@ const form = reactive({
   UpdatedAt: ''
 })
 
-const route = useRoute()
 const router = useRouter()
-const currentuser = ref("")
 const loading = ref(false)
 const error = ref(null)
 const message = ref(null)
@@ -218,10 +215,10 @@ const classes = ref({
               v-model="form.AssignedTo" :options="userList" placeholder="Выбрать пользователя" required
               :classes="classes" />
           </div>
-          <div v-if="!props" class="d-flex mt-3 justify-content-center font-monospace">
+          <div v-if="!props.id" class="d-flex mt-3 justify-content-center font-monospace">
             <button type="submit" class="btn btn-success shadow">Создать</button>
           </div>
-          <div v-if="props" class="d-flex mt-3 justify-content-center font-monospace">
+          <div v-if="props.id" class="d-flex mt-3 justify-content-center font-monospace">
             <button type="submit" class="btn btn-success shadow">Редактировать</button>
           </div>
           <div class="d-flex mt-3 justify-content-center font-monospace">

@@ -5,7 +5,7 @@ import Cookies from 'js-cookie'
 import { useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
-const loading = ref(false)
+const   = ref(false)
 const error = ref(null)
 
 onMounted(() => {
