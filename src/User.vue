@@ -14,18 +14,23 @@ const form = reactive({
 const loading = ref(false)
 const error = ref(null)
 const message = ref(null)
-
+const success = ref(false)
 
 async function submitForm() {
   error.value = null
   message.value = null
-  
-
   try {
     const response = await api.post(
       'api/user',
       form
     )
+    if(response.status == 200){
+        success.value = true;
+        setTimeout(() => {
+          success.value = false
+       }, 3000)
+       router.push('/')
+    }
 
   } catch (err) {
     router.push({
@@ -42,6 +47,9 @@ async function submitForm() {
   <div class="container-fluid bg-color-dark">
     <div class="d-flex position-absolute top-50 start-50 translate-middle">
       <form @submit.prevent="submitForm">
+        <div v-if="success" class="alert alert-success" role="alert">
+          Успех!
+       </div>
         <div class="col"><label for="login"></label>
           <div class="d-flex mt-2 justify-content-end">
             <span class="font-monospace">Логин</span>

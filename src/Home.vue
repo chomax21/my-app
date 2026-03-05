@@ -74,7 +74,7 @@ async function signIn() {
         } else {
             router.push({
                 path: '/error',
-                query: { message: message.value , status: err.code }
+                query: { message: 'Пользователь не найден :(' , status: '' }
             })
         }
 
